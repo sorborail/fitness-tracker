@@ -1,27 +1,27 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {TrainingService} from '../training.service';
 import {NgForm} from '@angular/forms';
-import {Subscription} from 'rxjs';
+import {Observable} from 'rxjs';
 import {Exercise} from '../exercise.model';
-import {UiService} from '../../shared/ui.service';
+import * as TrainingState from '../training.reducer';
+import * as RootState from '../../app.reducer';
+import {Store} from '@ngrx/store';
 
 @Component({
   selector: 'app-new-training',
   templateUrl: './new-training.component.html',
   styleUrls: ['./new-training.component.scss']
 })
-export class NewTrainingComponent implements OnInit, OnDestroy {
+export class NewTrainingComponent implements OnInit {
 
-  isLoading = true;
-  exercises: Exercise[]; // Observable<Exercise[]> - but need fix spread operator
-  private exercisesSub: Subscription;
-  private loadingSub: Subscription;
+  isLoading$: Observable<boolean>;
+  exercises$: Observable<Exercise[]>;
 
-  constructor(private trainingService: TrainingService, private uiService: UiService) { }
+  constructor(private trainingService: TrainingService, private store: Store<{ui: TrainingState.State}>) { }
 
   ngOnInit() {
-    this.loadingSub = this.uiService.loadingStateChanged$.subscribe(isLoading => this.isLoading = isLoading);
-    this.exercisesSub = this.trainingService.exercisesChanged$.subscribe(exercises => this.exercises = exercises);
+    this.isLoading$ = this.store.select(RootState.getIsLoading);
+    this.exercises$ = this.store.select(TrainingState.getAvailableExercises);
     this.fetchExercises();
   }
 
@@ -31,14 +31,5 @@ export class NewTrainingComponent implements OnInit, OnDestroy {
 
   onStartTraining(form: NgForm) {
     this.trainingService.startExercise(form.value.exercise);
-  }
-
-  ngOnDestroy(): void {
-    if (this.exercisesSub) {
-      this.exercisesSub.unsubscribe();
-    }
-    if (this.loadingSub) {
-      this.loadingSub.unsubscribe();
-    }
   }
 }

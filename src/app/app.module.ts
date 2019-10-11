@@ -16,6 +16,8 @@ import {environment} from '../environments/environment';
 import {MaterialModule} from './material.module';
 import {AuthModule} from './auth/auth.module';
 import {AngularFirestoreModule} from '@angular/fire/firestore';
+import {StoreModule} from '@ngrx/store';
+import {reducers} from './app.reducer';
 
 registerLocaleData(ruLocale, 'ru');
 
@@ -34,7 +36,15 @@ registerLocaleData(ruLocale, 'ru');
     AppRoutingModule,
     FlexLayoutModule,
     AngularFireModule.initializeApp(environment.firebase),
-    AngularFirestoreModule
+    AngularFirestoreModule,
+    StoreModule.forRoot(reducers, {
+      runtimeChecks: {
+        strictStateImmutability: true,
+        strictActionImmutability: true,
+        strictStateSerializability: false,
+        strictActionSerializability: false,
+      },
+    })
   ],
   providers: [
     {provide: MAT_DATE_LOCALE, useValue: 'ru-RU'}
